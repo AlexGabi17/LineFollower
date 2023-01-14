@@ -46,11 +46,12 @@ void setup() {
   static const long CALIBRATION_MOTOR_SPEED = 50;
   const auto start = millis();
   unsigned oldIdx = -1;
-  bool direciton = false;
+  bool direction = false;
   for (uint16_t i = 0; i < 400; i++) {
     const auto intervalIdx = (millis() - start) / INTERVAL_DURATION;
     if(intervalIdx != oldIdx) {
         oldIdx = intervalIdx;
+        direction = !direciton;
         setMotorSpeed(direction * CALIBRATION_MOTOR_SPEED, (!direction) * CALIBRATION_MOTOR_SPEED);
     }
     qtr.calibrate();
