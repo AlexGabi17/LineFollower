@@ -71,7 +71,7 @@ void setup() {
 }
 
 void loop() {
-
+  errorCalculate();
   m1Speed = constrain(m1Speed, 0, maxSpeed);
   m2Speed = constrain(m2Speed, 0, maxSpeed);
   setMotorSpeed(m1Speed, m2Speed);
