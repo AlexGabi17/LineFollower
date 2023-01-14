@@ -41,9 +41,19 @@ void setup() {
   // calibrate the sensor. For maximum grade the line follower should do
   // the movement itself,
   // without human interaction.
+ 
+  static const long INTERVAL_DURATION = 300;
+  static const long CALIBRATION_MOTOR_SPEED = 50;
+  const auto start = millis();
+  unsigned oldIdx = -1;
+  bool direciton = false;
   for (uint16_t i = 0; i < 400; i++) {
+    const auto intervalIdx = (millis() - start) / INTERVAL_DURATION;
+    if(intervalIdx != oldIdx) {
+        oldIdx = intervalIdx;
+        setMotorSpeed(direction * CALIBRATION_MOTOR_SPEED, (!direction) * CALIBRATION_MOTOR_SPEED);
+    }
     qtr.calibrate();
-    // do motor movement here, with millis() as to not ruin calibration)
   }
   digitalWrite(LED_BUILTIN, LOW);
   Serial.begin(9600);
