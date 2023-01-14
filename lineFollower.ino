@@ -1,4 +1,5 @@
 #include <QTRSensors.h>
+
 const int m11Pin = 7;
 const int m12Pin = 6;
 const int m21Pin = 5;
@@ -19,10 +20,10 @@ int lastError = 0;
 const int maxSpeed = 255;
 const int minSpeed = -255;
 const int baseSpeed = 255;
-// QTRSensors qtr;
+QTRSensors qtr;
 const int sensorCount = 6;
 int sensorValues[sensorCount];
-int sensors[sensorCount] = { 0, 0, 0, 0, 0, 0 };
+int sensors[sensorCount] = {0, 0, 0, 0, 0, 0};
 void setup() {
   // pinMode setup
   pinMode(m11Pin, OUTPUT);
@@ -32,33 +33,42 @@ void setup() {
   pinMode(m1Enable, OUTPUT);
   pinMode(m2Enable, OUTPUT);
   qtr.setTypeAnalog();
-  qtr.setSensorPins((const uint8_t[]){ A0, A1, A2, A3, A4, A5 },
-                    sensorCount);
+  qtr.setSensorPins((const uint8_t[]){A0, A1, A2, A3, A4, A5}, sensorCount);
   delay(500);
   pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, HIGH);  // turn on Arduino's LED to indicate we
-                                    // are in calibration mode
+  digitalWrite(LED_BUILTIN, HIGH); // turn on Arduino's LED to indicate we
+                                   // are in calibration mode
   // calibrate the sensor. For maximum grade the line follower should do
   // the movement itself,
   // without human interaction.
- 
-  static const long INTERVAL_DURATION = 300;
-  static const long CALIBRATION_MOTOR_SPEED = 50;
+
+  static const long INTERVAL_DURATION = 350;
+  static const long CALIBRATION_MOTOR_SPEED = 160;
   const auto start = millis();
   unsigned oldIdx = -1;
-  bool direction = false;
+  int direction = 1;
   for (uint16_t i = 0; i < 400; i++) {
     const auto intervalIdx = (millis() - start) / INTERVAL_DURATION;
-    if(intervalIdx != oldIdx) {
-        oldIdx = intervalIdx;
-        direction = !direciton;
-        setMotorSpeed(direction * CALIBRATION_MOTOR_SPEED, (!direction) * CALIBRATION_MOTOR_SPEED);
+    /*
+    if (intervalIdx != oldIdx) {
+      oldIdx = intervalIdx;
+
+      if (direction == -1)
+        direction = 1;
+      else
+        direction = -1;
+
+      setMotorSpeed(direction * CALIBRATION_MOTOR_SPEED,
+                    direction * CALIBRATION_MOTOR_SPEED * -1);
     }
+    */
+
     qtr.calibrate();
   }
+
   digitalWrite(LED_BUILTIN, LOW);
-  Serial.begin(9600);
 }
+
 void loop() {
   // inefficient code, written in loop. You must create separate functions
   int error = map(qtr.readLineBlack(sensorValues), 0, 5000, -255, 255);
@@ -66,39 +76,39 @@ void loop() {
   i = i + error;
   d = error - lastError;
   lastError = error;
-  int motorSpeed = pidControl(kp, ki, kd);  // = error in this case m1Speed = baseSpeed;
+  int motorSpeed = pidControl(kp, ki, kd); // = error in this case
+
+  m1Speed = baseSpeed;
   m2Speed = baseSpeed;
-  m1Speed += motorSpeed;
-}
-else if (error > 0) {
-  m2Speed -= motorSpeed;
-}
-// make sure it doesn't go past limits. You can use -255 instead of 0 if
-// calibrated programmed properly.
-// making sure we don't go out of bounds
-// maybe the lower bound should be negative, instead of 0? This of what
-// happens when making a steep turn
+
+  if (error < 0) {
+    m1Speed += motorSpeed;
+  } else if (error > 0) {
+    m2Speed -= motorSpeed;
+  }
+  // make sure it doesn't go past limits. You can use -255 instead of 0 if
+  // calibrated programmed properly.
+  // making sure we don't go out of bounds
+  // maybe the lower bound should be negative, instead of 0? This of what
+  // happens when making a steep turn
   m1Speed = constrain(m1Speed, 0, maxSpeed);
   m2Speed = constrain(m2Speed, 0, maxSpeed);
   setMotorSpeed(m1Speed, m2Speed);
-// DEBUGGING
-// Serial.print("Error: "); // Serial.println(error);
-// Serial.print("M1 speed: "); // Serial.println(m1Speed); //
-// Serial.print("M2 speed: "); // Serial.println(m2Speed); //
-// delay(250);
+  // DEBUGGING
+  // Serial.print("Error: "); // Serial.println(error);
+  // Serial.print("M1 speed: "); // Serial.println(m1Speed); //
+  // Serial.print("M2 speed: "); // Serial.println(m2Speed); //
+  // delay(250);
 }
 // calculate PID value based on error, kp, kd, ki, p, i and d.
-void pidControl(float kp, float ki, float kd) {  // TODO
+int pidControl(float kp, float ki, float kd) { // TODO
   int motorSpeed = kp * p + ki * i + kd * d;
   return motorSpeed;
 }
 // each arguments takes values between -255 and 255. The negative values
 // Introduction to Robotics 17 Laboratory no.9
 
-
 void setMotorSpeed(int motor1Speed, int motor2Speed) {
-  // remove comment if any of the motors are going in reverse // motor1Speed = -motor1Speed;
-  // motor2Speed = -motor2Speed;
   if (motor1Speed == 0) {
     digitalWrite(m11Pin, LOW);
     digitalWrite(m12Pin, LOW);
