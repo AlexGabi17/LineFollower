@@ -9,22 +9,23 @@ const int m2Enable = 10;
 int m1Speed = 0;
 int m2Speed = 0;
 // increase kp’s value and see what happens
-float kp = 0.07;
+float kp = 10;
 float ki = 0;
-float kd = 0.6;
-int p = 1;
-int i = 0;
-int d = 0;
+float kd = 15;
+float p = 1;
+float i = 0;
+float d = 0;
 int error = 0;
 int lastError = 0;
 const int maxSpeed = 255;
 const int minSpeed = -255;
-const int baseSpeed = 255;
+const int baseSpeed = 200;
 QTRSensors qtr;
 const int sensorCount = 6;
 int sensorValues[sensorCount];
 int sensors[sensorCount] = {0, 0, 0, 0, 0, 0};
 void setup() {
+  Serial.begin(9600);
   // pinMode setup
   pinMode(m11Pin, OUTPUT);
   pinMode(m12Pin, OUTPUT);
@@ -109,6 +110,8 @@ int pidControl(float kp, float ki, float kd) { // TODO
 // Introduction to Robotics 17 Laboratory no.9
 
 void setMotorSpeed(int motor1Speed, int motor2Speed) {
+  
+
   if (motor1Speed == 0) {
     digitalWrite(m11Pin, LOW);
     digitalWrite(m12Pin, LOW);
