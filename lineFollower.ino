@@ -49,7 +49,8 @@ void setup() {
   Serial.begin(9600);
 }
 void loop() {
-  // inefficient code, written in loop. You must create separate functions int error = map(qtr.readLineBlack(sensorValues), 0, 5000, -50, 50);
+  // inefficient code, written in loop. You must create separate functions
+  int error = map(qtr.readLineBlack(sensorValues), 0, 5000, -255, 255);
   p = error;
   i = i + error;
   d = error - lastError;
